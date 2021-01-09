@@ -54,17 +54,17 @@ class KeyDefinition(ItemDefinition):
     destination = models.ForeignKey(Enemy, on_delete=models.CASCADE)
 
 
-class ArtifactDefinition(ItemDefinition):
-    class MagicPower(models.TextChoices):
-        FIRE_DAMAGE = 'FIRE', 'Obrazenia od ognia'
-        MAGIC_DAMAGE = 'MAGIC', 'Obrazenia od magii'
+class MagicPower(models.Model):
+    power = models.CharField(max_length=256, unique=True)
 
+
+class ArtifactDefinition(ItemDefinition):
     class ArtifactType(models.TextChoices):
         WEAPON = 'WEAPON', 'bron'
         ARMOR = 'ARMOR', 'zbroja'
         JEWELRY = 'JEWELRY', 'bizuteria'
 
-    magic_power = models.CharField(max_length=96, choices=MagicPower.choices)
+    magic_power = models.ForeignKey(MagicPower, on_delete=models.SET_NULL, null=True)
     artifact_type = models.CharField(max_length=96, choices=ArtifactType.choices)
     description = models.TextField()
 
@@ -78,6 +78,14 @@ class ItemManager(models.Manager):
         self.create(*args, **kwargs)
 
 
+class ItemQuerySet(models.QuerySet):
+    def available(self):
+        return self.filter(durability_low__gt=now())
+
+    def might_be_expired(self):
+        return self.filter(durability_low__lt=now()).filter(durability_high__gt=now())
+
+
 class Item(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -87,7 +95,7 @@ class Item(models.Model):
     exchanged = models.BooleanField(default=False)
     exchanged_with = models.CharField(max_length=256, null=True, blank=True)
 
-    objects = ItemManager
+    objects = ItemManager.from_queryset(ItemQuerySet)()
 
     class Meta:
         abstract = True
