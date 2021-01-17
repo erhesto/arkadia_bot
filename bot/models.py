@@ -11,6 +11,9 @@ class ItemDefinition(models.Model):
 
     class Meta:
         abstract = True
+    
+    def __str__(self) -> str:
+        return self.short.capitalize()
 
     def show(self):
         return self.short
