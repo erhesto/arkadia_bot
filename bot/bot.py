@@ -36,7 +36,7 @@ class Bot:
         self.parser = Parser(self.COMMANDS)
     
     async def dispatch_message(self, message, user):
-        if message.author == user:
+        if message.author == user or not message.content.startswith('/'):
             return
         try:
             parsed_command = self.parser.parse(message.content)
