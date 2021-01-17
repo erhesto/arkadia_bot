@@ -34,7 +34,7 @@ DEBUG = env('DEBUG')
 
 DISCORD_TOKEN = env('DISCORD_TOKEN')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [".herokuapp.com"]
 
 
 # Application definition
